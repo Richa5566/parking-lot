@@ -1,0 +1,88 @@
+
+enum VehicleType {
+    CAR, BIKE, TRUCK;
+}
+
+enum SpotType {
+    COMPACT, LARGE, HANDICAPPED, BIKE;
+}
+
+
+class ParkingSpot {
+    private int id;
+    private SpotType type;
+    private boolean isFree;
+    private Vehicle vehicle;
+
+    public ParkingSpot(int id, SpotType type) {
+        this.id = id;
+        this.type = type;
+        this.isFree = true;
+    }
+
+    public boolean canFitVehicle(Vehicle vehicle) {
+        // Basic logic: Trucks only in Large, Bikes in Bike, Cars in Compact/Large
+        if (vehicle.getType() == VehicleType.TRUCK && type == SpotType.LARGE) return true;
+        if (vehicle.getType() == VehicleType.BIKE && type == SpotType.BIKE) return true;
+        if (vehicle.getType() == VehicleType.CAR && (type == SpotType.COMPACT || type == SpotType.LARGE)) return true;
+        return false;
+    }
+
+    public void park(Vehicle v) {
+        this.vehicle = v;
+        this.isFree = false;
+    }
+
+    public void unpark() {
+        this.vehicle = null;
+        this.isFree = true;
+    }
+}
+
+class Vehicle {
+    private String licensePlate;
+    private VehicleType type;
+
+    public Vehicle(String licensePlate, VehicleType type) {
+        this.licensePlate = licensePlate;
+        this.type = type;
+    }
+
+    public VehicleType getType() { return type; }
+}
+
+class Ticket {
+    private String id;
+    private Vehicle vehicle;
+    private ParkingSpot spot;
+    private long entryTime;
+
+    public Ticket(String id, Vehicle v, ParkingSpot spot) {
+        this.id = id;
+        this.vehicle = v;
+        this.spot = spot;
+        this.entryTime = System.currentTimeMillis();
+    }
+}
+
+class ParkingLot {
+    private List<ParkingFloor> floors;
+
+    public ParkingSpot findSpot(Vehicle vehicle) {
+        for (ParkingFloor floor : floors) {
+            ParkingSpot spot = floor.getAvailableSpot(vehicle);
+            if (spot != null) return spot;
+        }
+        return null;
+    }
+
+    public Ticket parkVehicle(Vehicle vehicle) {
+        ParkingSpot spot = findSpot(vehicle);
+        if (spot == null) {
+            System.out.println("No available spot!");
+            return null;
+        }
+        spot.park(vehicle);
+        return new Ticket(UUID.randomUUID().toString(), vehicle, spot);
+    }
+}
